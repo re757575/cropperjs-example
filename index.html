@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>cropperjs-example</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/cropper/2.3.4/cropper.min.css" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropper/2.3.4/cropper.min.js"></script>
+  <style>
+
+    /* Limit image width to avoid overflow the container */
+
+    img {
+      max-width: 100%;
+      /* This rule is very important, please do not ignore this! */
+    }
+
+    div {
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div>
+    <input type="file" id="myFile" onchange="readURL(this)" accept="image/*">
+  </div>
+
+  <div>
+    <img id="image" src="#" alt="your image">
+    <button onclick="rotateImg(90)">rotate +90</button>
+    <button onclick="rotateImg(-90)">rotate -90</button>
+    <button onclick="scaleXImg()">水平翻轉</button>
+    <button onclick="scaleYImg()">垂直翻轉</button>
+    <button onclick="resetImg()">重置</button>
+  </div>
+  <div>
+    <a href="#" id="downloadImg" download="cropped.jpg">下載</a>
+  </div>
+
+  <div id="croppedImage"></div>
+
+  <script>
+    var $image = $('#image');
+
+    function cropImg(url) {
+      // load base64 image
+      $image.attr('src', url);
+
+      $image.cropper({
+        // 截圖比列
+        aspectRatio: 16 / 9,
+        preview: '#croppedImage', // not working ?
+        // 截圖 event
+        crop: function (e) {
+          // console.log('---------------------------------------------');
+          // console.log('x:', e.x);
+          // console.log('y:', e.y);
+          // console.log('width:', e.width);
+          // console.log('height:', e.height);
+          // console.log('rotate:', e.rotate);
+          // console.log('scaleX:', e.scaleX);
+          // console.log('scaleY:', e.scaleY);
+          // console.log('---------------------------------------------');
+          previewImg();
+        },
+        // not working ?
+        ready: function () {}
+      });
+    }
+
+    function readURL(input) {
+      if (input.files && input.files[0]) {
+
+        // 銷毀 cropper 物件
+        if ($image.cropper) {
+          $image.cropper('destroy');
+        }
+
+        var reader = new FileReader();
+
+        reader.onloadend = function (e) {
+          cropImg(reader.result);
+        };
+
+        reader.readAsDataURL(input.files[0]);
+      }
+    }
+
+    function rotateImg(degree) {
+      $image.cropper('rotate', degree);
+    }
+
+    function scaleXImg(scaleX) {
+      var data = $image.cropper('getData');
+      if (data.scaleX == 1) {
+        $image.cropper('scaleX', -1);
+      } else {
+        $image.cropper('scaleX', 1);
+      }
+    }
+
+    function scaleYImg(scaleX) {
+      var data = $image.cropper('getData');
+      if (data.scaleY == 1) {
+        $image.cropper('scaleY', -1);
+      } else {
+        $image.cropper('scaleY', 1);
+      }
+    }
+
+    function resetImg() {
+      $image.cropper('reset');
+    }
+
+    function previewImg() {
+      var data = $image.cropper('getData');
+
+      // Canvas
+      var croppedCanvas = $image.cropper('getCroppedCanvas', {
+        width: 160 * 2,
+        height: 90 * 2
+      });
+      $('#croppedImage').html(croppedCanvas);
+
+      // Blob
+      $image.cropper('getCroppedCanvas').toBlob(function (blob) {});
+
+      $('#downloadImg').attr('href', croppedCanvas.toDataURL('image/jpeg'));
+    }
+  </script>
+</body>
+
+</html>
